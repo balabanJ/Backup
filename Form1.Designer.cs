@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.buttonExit = new System.Windows.Forms.Button();
@@ -36,6 +38,8 @@
             this.checkBoxYideToTray = new System.Windows.Forms.CheckBox();
             this.checkBoxAutoStart = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.comboBoxZip = new System.Windows.Forms.ComboBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.textBoxScenarioTitle = new System.Windows.Forms.TextBox();
             this.buttonRestore = new System.Windows.Forms.Button();
             this.buttonCopy = new System.Windows.Forms.Button();
@@ -53,10 +57,9 @@
             this.comboBoxScenarioType = new System.Windows.Forms.ComboBox();
             this.listBoxData = new System.Windows.Forms.ListBox();
             this.listBoxScenario = new System.Windows.Forms.ListBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.comboBoxZip = new System.Windows.Forms.ComboBox();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -171,6 +174,30 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Сценарии";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // comboBoxZip
+            // 
+            this.comboBoxZip.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxZip.FormattingEnabled = true;
+            this.comboBoxZip.Items.AddRange(new object[] {
+            "Без сжатия",
+            "Сжимать"});
+            this.comboBoxZip.Location = new System.Drawing.Point(245, 94);
+            this.comboBoxZip.Name = "comboBoxZip";
+            this.comboBoxZip.Size = new System.Drawing.Size(141, 21);
+            this.comboBoxZip.TabIndex = 10;
+            this.comboBoxZip.SelectedIndexChanged += new System.EventHandler(this.checkBoxPack_CheckedChanged);
+            // 
+            // button1
+            // 
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button1.Location = new System.Drawing.Point(244, 271);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(141, 23);
+            this.button1.TabIndex = 9;
+            this.button1.Text = "Мастер сценариев";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // textBoxScenarioTitle
             // 
@@ -353,30 +380,6 @@
             this.listBoxScenario.TabIndex = 0;
             this.listBoxScenario.SelectedIndexChanged += new System.EventHandler(this.listBoxScenario_SelectedIndexChanged);
             // 
-            // button1
-            // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button1.Location = new System.Drawing.Point(244, 271);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(141, 23);
-            this.button1.TabIndex = 9;
-            this.button1.Text = "Мастер сценариев";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // comboBoxZip
-            // 
-            this.comboBoxZip.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxZip.FormattingEnabled = true;
-            this.comboBoxZip.Items.AddRange(new object[] {
-            "Без сжатия",
-            "Сжимать"});
-            this.comboBoxZip.Location = new System.Drawing.Point(245, 94);
-            this.comboBoxZip.Name = "comboBoxZip";
-            this.comboBoxZip.Size = new System.Drawing.Size(141, 21);
-            this.comboBoxZip.TabIndex = 10;
-            this.comboBoxZip.SelectedIndexChanged += new System.EventHandler(this.checkBoxPack_CheckedChanged);
-            // 
             // openFileDialog
             // 
             this.openFileDialog.FileName = "*.*";
@@ -387,6 +390,15 @@
             // 
             this.folderBrowserDialog.RootFolder = System.Environment.SpecialFolder.MyComputer;
             this.folderBrowserDialog.ShowNewFolderButton = false;
+            // 
+            // notifyIcon
+            // 
+            this.notifyIcon.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            this.notifyIcon.BalloonTipText = "Backup";
+            this.notifyIcon.BalloonTipTitle = "Backup";
+            this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
+            this.notifyIcon.Text = "Backup";
+            this.notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseClick);
             // 
             // Form1
             // 
@@ -438,6 +450,7 @@
         private System.Windows.Forms.ComboBox comboBoxZip;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
+        private System.Windows.Forms.NotifyIcon notifyIcon;
     }
 }
 

@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System;
 using System.Windows.Forms;
 using System.IO;
+
+using Microsoft.Win32;
 
 //Сервисные функции
 
@@ -11,25 +14,27 @@ namespace Backup
 {
     class Service
     {
-        static public void SetAutoStart()
+        const string ApplicationName = "Backup";
+        static public bool SetAutorunValue(bool autorun)
         {
-            ///!!!
+            string ExePath = Application.ExecutablePath;
+            RegistryKey reg;
+            reg = Registry.CurrentUser.CreateSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run\\");
+            try
+            {
+                if (autorun)
+                    reg.SetValue(ApplicationName, ExePath);
+                else
+                    reg.DeleteValue(ApplicationName);
+                reg.Close();
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
 
-        static public void RemoveAutoStart()
-        {
-            ///!!!
-        }
-
-        static public void ActivateTray()
-        {
-            ///!!!
-        }
-
-        static public void DeactivateTray()
-        {
-            ///!!!
-        }
         static public void Minimize()
         {
             ///!!!Application.
@@ -58,7 +63,7 @@ namespace Backup
                 Scenario s = new Scenario();
                 s.Title = "Демо 1";
                 s.Zip = true;
-                s.Destination = @"C:\Users\Юлия\Рабочий стол\Backup";
+                s.Destination = @"C:\Users\Юлия\Desktop\Backup";
                 s.Source.Add(@"C:\Users\Юлия\Documents\Python\program1");
                 s.Source.Add(@"C:\Users\Юлия\Pictures\Wallpapers");
                 list.Add(s);

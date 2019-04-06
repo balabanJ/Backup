@@ -67,6 +67,7 @@
     <Compile Include="FormShedule.Designer.cs">
       <DependentUpon>FormShedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="MakeCopy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scenario.cs" />

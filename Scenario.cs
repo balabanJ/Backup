@@ -10,12 +10,12 @@ namespace Backup
     enum ScenarioType {зеркальный, инкрементальный, дифференциальный, полный};
     class Scenario
     {
-        public ScenarioType scenarioType = ScenarioType.зеркальный;
-        public string Title = "Новый";
-        public bool Zip = false;
-        public string Destination = "";
-        public List<string> Shedule = new List<string>();
-        public List<string> Source = new List<string>();
+        public ScenarioType scenarioType = ScenarioType.зеркальный; //Тип копирования
+        public string Title = "Новый"; //Название сценария
+        public bool Zip = false; //Использовать архиватор
+        public string Destination = ""; //Путь назначения
+        public List<string> Shedule = new List<string>(); //Расписания
+        public List<string> Source = new List<string>(); //Источники данных
 
         static ScenarioType Convert(string s)
         {

@@ -19,27 +19,20 @@ namespace Backup
 
         private void checkBoxAutoStart_CheckedChanged(object sender, EventArgs e)
         {
-            //MessageBox.Show("Если выбрать, то программа будет запускаться при старте операционной системы", "Справка");
-            if (checkBoxAutoStart.Checked)
-                Service.SetAutoStart();
-            else
-                Service.RemoveAutoStart();
+            Service.SetAutorunValue(checkBoxAutoStart.Checked);
         }
 
         private void checkBoxYideToTray_CheckedChanged(object sender, EventArgs e)
         {
             //MessageBox.Show("Если выбрать, то программа будет запускаться свернутая в значок в системном Tray", "Справка");
-            if (checkBoxYideToTray.Checked)
-                Service.ActivateTray();
-            else
-                Service.DeactivateTray();
+            notifyIcon.Visible = checkBoxYideToTray.Checked;
         }
 
         private void buttonHide_Click(object sender, EventArgs e)
         {
             //MessageBox.Show("Если нажать, то программа свернется в значок в системном Tray", "Справка");
-            Service.ActivateTray();
-            Service.Minimize();
+            notifyIcon.Visible = true; //В любом случае, если надо свернуться
+            Hide();
         }
 
         private void buttonExit_Click(object sender, EventArgs e)
@@ -55,15 +48,48 @@ namespace Backup
 
         private void buttonCopy_Click(object sender, EventArgs e)
         {
-            ///!!!
-            MessageBox.Show("Произведено резервное копирование по выбранному сценарию", "Справка");
+            //MessageBox.Show("Произведено резервное копирование по выбранному сценарию", "Справка");
+            if (listBoxScenario.SelectedIndex < 0) return;
+            Scenario s = list[listBoxScenario.SelectedIndex];
+            switch (s.scenarioType)
+            {
+                case ScenarioType.полный:
+                    MakeCopy.CopyFull(ref s);
+                    break;
+                case ScenarioType.инкрементальный:
+                    MakeCopy.CopyIncremental(ref s);
+                    break;
+                case ScenarioType.дифференциальный:
+                    MakeCopy.CopyDifferential(ref s);
+                    break;
+                case ScenarioType.зеркальный:
+                    MakeCopy.CopyMirror(ref s);
+                    break;
+            };
             NextStep = true;
         }
 
         private void buttonRestore_Click(object sender, EventArgs e)
         {
             ///!!!
-            MessageBox.Show("Восстановление данных по выбранному сценарию", "Справка");
+            //MessageBox.Show("Восстановление данных по выбранному сценарию", "Справка");
+            if (listBoxScenario.SelectedIndex < 0) return;
+            Scenario s = list[listBoxScenario.SelectedIndex];
+            switch (s.scenarioType)
+            {
+                case ScenarioType.полный:
+                    MakeCopy.RestoreFull(ref s);
+                    break;
+                case ScenarioType.инкрементальный:
+                    MakeCopy.RestoreIncremental(ref s);
+                    break;
+                case ScenarioType.дифференциальный:
+                    MakeCopy.RestoreDifferential(ref s);
+                    break;
+                case ScenarioType.зеркальный:
+                    MakeCopy.RestoreMirror(ref s);
+                    break;
+            };
             NextStep = true;
         }
 
@@ -312,6 +338,10 @@ namespace Backup
             ///!!! Восстановить чекбоксы и прочие настройки
         }
 
-
+        private void notifyIcon_MouseClick(object sender, MouseEventArgs e)
+        {
+            Show();
+            notifyIcon.Visible = checkBoxYideToTray.Checked;
+        }
     }
 }
