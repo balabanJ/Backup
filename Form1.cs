@@ -54,7 +54,7 @@ namespace Backup
             switch (s.scenarioType)
             {
                 case ScenarioType.полный:
-                    MakeCopy.CopyFull(ref s);
+                    if (!MakeCopy.CopyFull(ref s)) MessageBox.Show("Копия не сделана");
                     break;
                 case ScenarioType.инкрементальный:
                     MakeCopy.CopyIncremental(ref s);
@@ -125,6 +125,7 @@ namespace Backup
         private void buttonRemoveData_Click(object sender, EventArgs e)
         {
             if (listBoxScenario.SelectedIndex < 0) return;
+            if (listBoxData.SelectedIndex < 0) return;
             //MessageBox.Show("Если нажать, то удалится выбранный элемент копирования", "Справка");
             Scenario s = list[listBoxScenario.SelectedIndex];
             s.Source.RemoveAt(listBoxData.SelectedIndex);
@@ -154,10 +155,10 @@ namespace Backup
             FS.listBox.Items.Clear();
             foreach (var x in s.Shedule)
                 FS.listBox.Items.Add(x);
-            FS.ShowDialog();
+            if (FS.ShowDialog() != DialogResult.OK) return;
             s.Shedule.Clear();
             foreach (var x in FS.listBox.Items)
-                FS.listBox.Items.Add(x.ToString());
+                s.Shedule.Add(x.ToString());
             Service.SaveList(list);
             NextStep = true;
         }

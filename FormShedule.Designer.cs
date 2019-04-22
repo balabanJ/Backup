@@ -29,23 +29,22 @@
         private void InitializeComponent()
         {
             this.listBox = new System.Windows.Forms.ListBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
-            this.dateTimePicker2 = new System.Windows.Forms.DateTimePicker();
-            this.dateTimePicker3 = new System.Windows.Forms.DateTimePicker();
-            this.button3 = new System.Windows.Forms.Button();
+            this.buttonRemove = new System.Windows.Forms.Button();
+            this.buttonReplace = new System.Windows.Forms.Button();
+            this.comboBoxPeriod = new System.Windows.Forms.ComboBox();
+            this.dateTimePickerDateFrom = new System.Windows.Forms.DateTimePicker();
+            this.dateTimePickerTimeFrom = new System.Windows.Forms.DateTimePicker();
+            this.dateTimePickerTimeTo = new System.Windows.Forms.DateTimePicker();
+            this.buttonAppend = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.dateTimePicker4 = new System.Windows.Forms.DateTimePicker();
-            this.label5 = new System.Windows.Forms.Label();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.labelDateFrom = new System.Windows.Forms.Label();
+            this.labelTimeFrom = new System.Windows.Forms.Label();
+            this.labelTimeTo = new System.Windows.Forms.Label();
+            this.dateTimePickerDateTo = new System.Windows.Forms.DateTimePicker();
+            this.labelDateTo = new System.Windows.Forms.Label();
+            this.checkBoxLimitDate = new System.Windows.Forms.CheckBox();
+            this.checkBoxLimitTime = new System.Windows.Forms.CheckBox();
             this.buttonOK = new System.Windows.Forms.Button();
-            this.label6 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // listBox
@@ -53,213 +52,226 @@
             this.listBox.FormattingEnabled = true;
             this.listBox.Location = new System.Drawing.Point(21, 22);
             this.listBox.Name = "listBox";
-            this.listBox.Size = new System.Drawing.Size(120, 212);
+            this.listBox.Size = new System.Drawing.Size(519, 212);
             this.listBox.TabIndex = 0;
+            this.listBox.SelectedIndexChanged += new System.EventHandler(this.listBox_SelectedIndexChanged);
             // 
-            // button1
+            // buttonRemove
             // 
-            this.button1.Location = new System.Drawing.Point(151, 214);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Удалить";
-            this.button1.UseVisualStyleBackColor = true;
+            this.buttonRemove.Location = new System.Drawing.Point(556, 251);
+            this.buttonRemove.Name = "buttonRemove";
+            this.buttonRemove.Size = new System.Drawing.Size(75, 23);
+            this.buttonRemove.TabIndex = 1;
+            this.buttonRemove.Text = "Удалить";
+            this.buttonRemove.UseVisualStyleBackColor = true;
+            this.buttonRemove.Click += new System.EventHandler(this.buttonRemove_Click);
             // 
-            // button2
+            // buttonReplace
             // 
-            this.button2.Location = new System.Drawing.Point(151, 185);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Заменить";
-            this.button2.UseVisualStyleBackColor = true;
+            this.buttonReplace.Location = new System.Drawing.Point(648, 222);
+            this.buttonReplace.Name = "buttonReplace";
+            this.buttonReplace.Size = new System.Drawing.Size(75, 23);
+            this.buttonReplace.TabIndex = 2;
+            this.buttonReplace.Text = "Заменить";
+            this.buttonReplace.UseVisualStyleBackColor = true;
+            this.buttonReplace.Click += new System.EventHandler(this.buttonReplace_Click);
             // 
-            // comboBox1
+            // comboBoxPeriod
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
+            this.comboBoxPeriod.FormattingEnabled = true;
+            this.comboBoxPeriod.Items.AddRange(new object[] {
             "Каждый час",
             "Каждый день",
             "Каждую неделю",
             "Каждый месяц",
             "Каждый год"});
-            this.comboBox1.Location = new System.Drawing.Point(322, 38);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(121, 21);
-            this.comboBox1.TabIndex = 3;
+            this.comboBoxPeriod.Location = new System.Drawing.Point(556, 22);
+            this.comboBoxPeriod.Name = "comboBoxPeriod";
+            this.comboBoxPeriod.Size = new System.Drawing.Size(167, 21);
+            this.comboBoxPeriod.TabIndex = 3;
             // 
-            // dateTimePicker1
+            // dateTimePickerDateFrom
             // 
-            this.dateTimePicker1.Location = new System.Drawing.Point(322, 74);
-            this.dateTimePicker1.Name = "dateTimePicker1";
-            this.dateTimePicker1.Size = new System.Drawing.Size(133, 20);
-            this.dateTimePicker1.TabIndex = 4;
+            this.dateTimePickerDateFrom.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dateTimePickerDateFrom.Location = new System.Drawing.Point(628, 72);
+            this.dateTimePickerDateFrom.Name = "dateTimePickerDateFrom";
+            this.dateTimePickerDateFrom.Size = new System.Drawing.Size(84, 20);
+            this.dateTimePickerDateFrom.TabIndex = 4;
+            this.dateTimePickerDateFrom.Visible = false;
             // 
-            // dateTimePicker2
+            // dateTimePickerTimeFrom
             // 
-            this.dateTimePicker2.Format = System.Windows.Forms.DateTimePickerFormat.Time;
-            this.dateTimePicker2.Location = new System.Drawing.Point(322, 155);
-            this.dateTimePicker2.Name = "dateTimePicker2";
-            this.dateTimePicker2.Size = new System.Drawing.Size(75, 20);
-            this.dateTimePicker2.TabIndex = 5;
+            this.dateTimePickerTimeFrom.Format = System.Windows.Forms.DateTimePickerFormat.Time;
+            this.dateTimePickerTimeFrom.Location = new System.Drawing.Point(637, 159);
+            this.dateTimePickerTimeFrom.Name = "dateTimePickerTimeFrom";
+            this.dateTimePickerTimeFrom.ShowUpDown = true;
+            this.dateTimePickerTimeFrom.Size = new System.Drawing.Size(75, 20);
+            this.dateTimePickerTimeFrom.TabIndex = 5;
+            this.dateTimePickerTimeFrom.Visible = false;
             // 
-            // dateTimePicker3
+            // dateTimePickerTimeTo
             // 
-            this.dateTimePicker3.Format = System.Windows.Forms.DateTimePickerFormat.Time;
-            this.dateTimePicker3.Location = new System.Drawing.Point(322, 181);
-            this.dateTimePicker3.Name = "dateTimePicker3";
-            this.dateTimePicker3.Size = new System.Drawing.Size(75, 20);
-            this.dateTimePicker3.TabIndex = 6;
+            this.dateTimePickerTimeTo.Format = System.Windows.Forms.DateTimePickerFormat.Time;
+            this.dateTimePickerTimeTo.Location = new System.Drawing.Point(637, 185);
+            this.dateTimePickerTimeTo.Name = "dateTimePickerTimeTo";
+            this.dateTimePickerTimeTo.ShowUpDown = true;
+            this.dateTimePickerTimeTo.Size = new System.Drawing.Size(75, 20);
+            this.dateTimePickerTimeTo.TabIndex = 6;
+            this.dateTimePickerTimeTo.Visible = false;
             // 
-            // button3
+            // buttonAppend
             // 
-            this.button3.Location = new System.Drawing.Point(151, 156);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 23);
-            this.button3.TabIndex = 7;
-            this.button3.Text = "Добавить";
-            this.button3.UseVisualStyleBackColor = true;
+            this.buttonAppend.Location = new System.Drawing.Point(556, 222);
+            this.buttonAppend.Name = "buttonAppend";
+            this.buttonAppend.Size = new System.Drawing.Size(75, 23);
+            this.buttonAppend.TabIndex = 7;
+            this.buttonAppend.Text = "Добавить";
+            this.buttonAppend.UseVisualStyleBackColor = true;
+            this.buttonAppend.Click += new System.EventHandler(this.buttonAppend_Click);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(231, 41);
+            this.label1.Location = new System.Drawing.Point(553, 3);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(85, 13);
             this.label1.TabIndex = 8;
             this.label1.Text = "Периодичность";
             // 
-            // label2
+            // labelDateFrom
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(247, 78);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(46, 13);
-            this.label2.TabIndex = 9;
-            this.label2.Text = "Срок от";
+            this.labelDateFrom.AutoSize = true;
+            this.labelDateFrom.Location = new System.Drawing.Point(553, 76);
+            this.labelDateFrom.Name = "labelDateFrom";
+            this.labelDateFrom.Size = new System.Drawing.Size(46, 13);
+            this.labelDateFrom.TabIndex = 9;
+            this.labelDateFrom.Text = "Срок от";
+            this.labelDateFrom.Visible = false;
             // 
-            // label3
+            // labelTimeFrom
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(250, 156);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(59, 13);
-            this.label3.TabIndex = 10;
-            this.label3.Text = "Начиная с";
+            this.labelTimeFrom.AutoSize = true;
+            this.labelTimeFrom.Location = new System.Drawing.Point(565, 160);
+            this.labelTimeFrom.Name = "labelTimeFrom";
+            this.labelTimeFrom.Size = new System.Drawing.Size(59, 13);
+            this.labelTimeFrom.TabIndex = 10;
+            this.labelTimeFrom.Text = "Начиная с";
+            this.labelTimeFrom.Visible = false;
             // 
-            // label4
+            // labelTimeTo
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(238, 185);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(78, 13);
-            this.label4.TabIndex = 11;
-            this.label4.Text = "Не позже чем";
+            this.labelTimeTo.AutoSize = true;
+            this.labelTimeTo.Location = new System.Drawing.Point(553, 189);
+            this.labelTimeTo.Name = "labelTimeTo";
+            this.labelTimeTo.Size = new System.Drawing.Size(78, 13);
+            this.labelTimeTo.TabIndex = 11;
+            this.labelTimeTo.Text = "Не позже чем";
+            this.labelTimeTo.Visible = false;
             // 
-            // dateTimePicker4
+            // dateTimePickerDateTo
             // 
-            this.dateTimePicker4.Location = new System.Drawing.Point(322, 100);
-            this.dateTimePicker4.Name = "dateTimePicker4";
-            this.dateTimePicker4.Size = new System.Drawing.Size(133, 20);
-            this.dateTimePicker4.TabIndex = 4;
+            this.dateTimePickerDateTo.Format = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dateTimePickerDateTo.Location = new System.Drawing.Point(628, 98);
+            this.dateTimePickerDateTo.Name = "dateTimePickerDateTo";
+            this.dateTimePickerDateTo.Size = new System.Drawing.Size(84, 20);
+            this.dateTimePickerDateTo.TabIndex = 4;
+            this.dateTimePickerDateTo.Visible = false;
             // 
-            // label5
+            // labelDateTo
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(247, 104);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(47, 13);
-            this.label5.TabIndex = 9;
-            this.label5.Text = "Срок до";
+            this.labelDateTo.AutoSize = true;
+            this.labelDateTo.Location = new System.Drawing.Point(553, 102);
+            this.labelDateTo.Name = "labelDateTo";
+            this.labelDateTo.Size = new System.Drawing.Size(47, 13);
+            this.labelDateTo.TabIndex = 9;
+            this.labelDateTo.Text = "Срок до";
+            this.labelDateTo.Visible = false;
             // 
-            // checkBox1
+            // checkBoxLimitDate
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(324, 127);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(145, 17);
-            this.checkBox1.TabIndex = 12;
-            this.checkBox1.Text = "Без ограничений срока";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBoxLimitDate.AutoSize = true;
+            this.checkBoxLimitDate.Checked = true;
+            this.checkBoxLimitDate.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxLimitDate.Location = new System.Drawing.Point(556, 49);
+            this.checkBoxLimitDate.Name = "checkBoxLimitDate";
+            this.checkBoxLimitDate.Size = new System.Drawing.Size(145, 17);
+            this.checkBoxLimitDate.TabIndex = 12;
+            this.checkBoxLimitDate.Text = "Без ограничений срока";
+            this.checkBoxLimitDate.UseVisualStyleBackColor = true;
+            this.checkBoxLimitDate.CheckedChanged += new System.EventHandler(this.checkBoxLimitDate_CheckedChanged);
             // 
-            // checkBox2
+            // checkBoxLimitTime
             // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(324, 210);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(103, 17);
-            this.checkBox2.TabIndex = 12;
-            this.checkBox2.Text = "В любое время";
-            this.checkBox2.UseVisualStyleBackColor = true;
+            this.checkBoxLimitTime.AutoSize = true;
+            this.checkBoxLimitTime.Checked = true;
+            this.checkBoxLimitTime.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxLimitTime.Location = new System.Drawing.Point(556, 136);
+            this.checkBoxLimitTime.Name = "checkBoxLimitTime";
+            this.checkBoxLimitTime.Size = new System.Drawing.Size(103, 17);
+            this.checkBoxLimitTime.TabIndex = 12;
+            this.checkBoxLimitTime.Text = "В любое время";
+            this.checkBoxLimitTime.UseVisualStyleBackColor = true;
+            this.checkBoxLimitTime.CheckedChanged += new System.EventHandler(this.checkBoxLimitTime_CheckedChanged);
             // 
             // buttonOK
             // 
             this.buttonOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.buttonOK.Location = new System.Drawing.Point(21, 250);
             this.buttonOK.Name = "buttonOK";
-            this.buttonOK.Size = new System.Drawing.Size(434, 23);
+            this.buttonOK.Size = new System.Drawing.Size(519, 23);
             this.buttonOK.TabIndex = 13;
             this.buttonOK.Text = "OK";
             this.buttonOK.UseVisualStyleBackColor = true;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(24, 3);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(179, 13);
-            this.label6.TabIndex = 14;
-            this.label6.Text = "Расписание пока не реализовано";
+            this.buttonOK.Click += new System.EventHandler(this.buttonOK_Click);
             // 
             // FormShedule
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(477, 285);
-            this.Controls.Add(this.label6);
+            this.ClientSize = new System.Drawing.Size(743, 285);
             this.Controls.Add(this.buttonOK);
-            this.Controls.Add(this.checkBox2);
-            this.Controls.Add(this.checkBox1);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.label2);
+            this.Controls.Add(this.checkBoxLimitTime);
+            this.Controls.Add(this.checkBoxLimitDate);
+            this.Controls.Add(this.labelTimeTo);
+            this.Controls.Add(this.labelTimeFrom);
+            this.Controls.Add(this.labelDateTo);
+            this.Controls.Add(this.labelDateFrom);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.button3);
-            this.Controls.Add(this.dateTimePicker3);
-            this.Controls.Add(this.dateTimePicker2);
-            this.Controls.Add(this.dateTimePicker4);
-            this.Controls.Add(this.dateTimePicker1);
-            this.Controls.Add(this.comboBox1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonAppend);
+            this.Controls.Add(this.dateTimePickerTimeTo);
+            this.Controls.Add(this.dateTimePickerTimeFrom);
+            this.Controls.Add(this.dateTimePickerDateTo);
+            this.Controls.Add(this.dateTimePickerDateFrom);
+            this.Controls.Add(this.comboBoxPeriod);
+            this.Controls.Add(this.buttonReplace);
+            this.Controls.Add(this.buttonRemove);
             this.Controls.Add(this.listBox);
             this.Name = "FormShedule";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Расписание ";
+            this.Load += new System.EventHandler(this.FormShedule_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.DateTimePicker dateTimePicker1;
-        private System.Windows.Forms.DateTimePicker dateTimePicker2;
-        private System.Windows.Forms.DateTimePicker dateTimePicker3;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button buttonRemove;
+        private System.Windows.Forms.Button buttonReplace;
+        private System.Windows.Forms.ComboBox comboBoxPeriod;
+        private System.Windows.Forms.DateTimePicker dateTimePickerDateFrom;
+        private System.Windows.Forms.DateTimePicker dateTimePickerTimeFrom;
+        private System.Windows.Forms.DateTimePicker dateTimePickerTimeTo;
+        private System.Windows.Forms.Button buttonAppend;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.DateTimePicker dateTimePicker4;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.Label labelDateFrom;
+        private System.Windows.Forms.Label labelTimeFrom;
+        private System.Windows.Forms.Label labelTimeTo;
+        private System.Windows.Forms.DateTimePicker dateTimePickerDateTo;
+        private System.Windows.Forms.Label labelDateTo;
+        private System.Windows.Forms.CheckBox checkBoxLimitDate;
+        private System.Windows.Forms.CheckBox checkBoxLimitTime;
         public System.Windows.Forms.ListBox listBox;
         private System.Windows.Forms.Button buttonOK;
-        private System.Windows.Forms.Label label6;
     }
 }

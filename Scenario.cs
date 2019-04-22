@@ -7,8 +7,8 @@ using System.IO;
 namespace Backup
 {
     //Класс "сценарий"
-    enum ScenarioType {зеркальный, инкрементальный, дифференциальный, полный};
-    class Scenario
+    public enum ScenarioType {зеркальный, инкрементальный, дифференциальный, полный};
+    public class Scenario
     {
         public ScenarioType scenarioType = ScenarioType.зеркальный; //Тип копирования
         public string Title = "Новый"; //Название сценария
