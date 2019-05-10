@@ -5,12 +5,22 @@
         /// <summary>
         /// Required designer variable.
         /// </summary>
+        /* 
+         * Предоставляет функциональные возможности для контейнеров. 
+         * Контейнеры являются объектами, логически включающими ноль и более компонентов.
+         */
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        /* 
+         * Реализация метода Dispose необходима для освобождения неуправляемых ресурсов, которые использует ваше приложение. 
+         * Сборщик мусора .NET не выделяет и не освобождает неуправляемую память.
+         * disposing используется параметр типа Boolean, который указывает, откуда осуществляется вызов метода: 
+         * из метода Dispose (значение true) или из метода завершения (значение false).
+         */
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -26,6 +36,7 @@
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
         /// </summary>
+        /* Загружает откомпилированную страницу компонента */
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
@@ -38,6 +49,8 @@
             this.checkBoxYideToTray = new System.Windows.Forms.CheckBox();
             this.checkBoxAutoStart = new System.Windows.Forms.CheckBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.labelState = new System.Windows.Forms.Label();
+            this.labelLastTime = new System.Windows.Forms.Label();
             this.comboBoxZip = new System.Windows.Forms.ComboBox();
             this.button1 = new System.Windows.Forms.Button();
             this.textBoxScenarioTitle = new System.Windows.Forms.TextBox();
@@ -60,6 +73,13 @@
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.timerHide = new System.Windows.Forms.Timer(this.components);
+            this.timerShedule = new System.Windows.Forms.Timer(this.components);
+            this.checkBoxSQLite = new System.Windows.Forms.CheckBox();
+            this.textBoxScenarioName = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.buttonSelectScenario = new System.Windows.Forms.Button();
+            this.openFileDialogScenario = new System.Windows.Forms.OpenFileDialog();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -67,9 +87,10 @@
             // 
             // tabControl1
             // 
-            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top 
+                | System.Windows.Forms.AnchorStyles.Bottom) 
+                | System.Windows.Forms.AnchorStyles.Left) 
+                | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
@@ -80,6 +101,10 @@
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.buttonSelectScenario);
+            this.tabPage1.Controls.Add(this.label4);
+            this.tabPage1.Controls.Add(this.textBoxScenarioName);
+            this.tabPage1.Controls.Add(this.checkBoxSQLite);
             this.tabPage1.Controls.Add(this.buttonExit);
             this.tabPage1.Controls.Add(this.buttonHide);
             this.tabPage1.Controls.Add(this.buttonHelp);
@@ -95,7 +120,7 @@
             // 
             // buttonExit
             // 
-            this.buttonExit.Location = new System.Drawing.Point(13, 105);
+            this.buttonExit.Location = new System.Drawing.Point(13, 127);
             this.buttonExit.Name = "buttonExit";
             this.buttonExit.Size = new System.Drawing.Size(123, 23);
             this.buttonExit.TabIndex = 4;
@@ -105,7 +130,7 @@
             // 
             // buttonHide
             // 
-            this.buttonHide.Location = new System.Drawing.Point(13, 72);
+            this.buttonHide.Location = new System.Drawing.Point(13, 94);
             this.buttonHide.Name = "buttonHide";
             this.buttonHide.Size = new System.Drawing.Size(123, 23);
             this.buttonHide.TabIndex = 3;
@@ -148,6 +173,8 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.labelState);
+            this.tabPage2.Controls.Add(this.labelLastTime);
             this.tabPage2.Controls.Add(this.comboBoxZip);
             this.tabPage2.Controls.Add(this.button1);
             this.tabPage2.Controls.Add(this.textBoxScenarioTitle);
@@ -175,6 +202,28 @@
             this.tabPage2.Text = "Сценарии";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // labelState
+            // 
+            this.labelState.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelState.AutoSize = true;
+            this.labelState.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelState.Location = new System.Drawing.Point(659, 94);
+            this.labelState.Name = "labelState";
+            this.labelState.Size = new System.Drawing.Size(139, 13);
+            this.labelState.TabIndex = 11;
+            this.labelState.Text = "Ничего не происходит";
+            // 
+            // labelLastTime
+            // 
+            this.labelLastTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.labelLastTime.AutoSize = true;
+            this.labelLastTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelLastTime.Location = new System.Drawing.Point(5, 349);
+            this.labelLastTime.Name = "labelLastTime";
+            this.labelLastTime.Size = new System.Drawing.Size(170, 13);
+            this.labelLastTime.TabIndex = 11;
+            this.labelLastTime.Text = "Время последнего запуска";
+            // 
             // comboBoxZip
             // 
             this.comboBoxZip.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -191,7 +240,7 @@
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button1.Location = new System.Drawing.Point(244, 271);
+            this.button1.Location = new System.Drawing.Point(244, 256);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(141, 23);
             this.button1.TabIndex = 9;
@@ -277,7 +326,7 @@
             // buttonDeleteScanario
             // 
             this.buttonDeleteScanario.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonDeleteScanario.Location = new System.Drawing.Point(245, 334);
+            this.buttonDeleteScanario.Location = new System.Drawing.Point(245, 319);
             this.buttonDeleteScanario.Name = "buttonDeleteScanario";
             this.buttonDeleteScanario.Size = new System.Drawing.Size(141, 23);
             this.buttonDeleteScanario.TabIndex = 6;
@@ -288,7 +337,7 @@
             // buttonAddScenario
             // 
             this.buttonAddScenario.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonAddScenario.Location = new System.Drawing.Point(244, 305);
+            this.buttonAddScenario.Location = new System.Drawing.Point(244, 290);
             this.buttonAddScenario.Name = "buttonAddScenario";
             this.buttonAddScenario.Size = new System.Drawing.Size(141, 23);
             this.buttonAddScenario.TabIndex = 5;
@@ -376,7 +425,7 @@
             this.listBoxScenario.FormattingEnabled = true;
             this.listBoxScenario.Location = new System.Drawing.Point(3, 26);
             this.listBoxScenario.Name = "listBoxScenario";
-            this.listBoxScenario.Size = new System.Drawing.Size(226, 329);
+            this.listBoxScenario.Size = new System.Drawing.Size(226, 316);
             this.listBoxScenario.TabIndex = 0;
             this.listBoxScenario.SelectedIndexChanged += new System.EventHandler(this.listBoxScenario_SelectedIndexChanged);
             // 
@@ -400,6 +449,62 @@
             this.notifyIcon.Text = "Backup";
             this.notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseClick);
             // 
+            // timerHide
+            // 
+            this.timerHide.Interval = 300;
+            this.timerHide.Tick += new System.EventHandler(this.timerHide_Tick);
+            // 
+            // timerShedule
+            // 
+            this.timerShedule.Enabled = true;
+            this.timerShedule.Interval = 10000;
+            this.timerShedule.Tick += new System.EventHandler(this.timerShedule_Tick);
+            // 
+            // checkBoxSQLite
+            // 
+            this.checkBoxSQLite.AutoSize = true;
+            this.checkBoxSQLite.Location = new System.Drawing.Point(13, 66);
+            this.checkBoxSQLite.Name = "checkBoxSQLite";
+            this.checkBoxSQLite.Size = new System.Drawing.Size(111, 17);
+            this.checkBoxSQLite.TabIndex = 5;
+            this.checkBoxSQLite.Text = "Данные в SQLite";
+            this.checkBoxSQLite.UseVisualStyleBackColor = true;
+            this.checkBoxSQLite.CheckedChanged += new System.EventHandler(this.checkBoxSQLite_CheckedChanged);
+            // 
+            // textBoxScenarioName
+            // 
+            this.textBoxScenarioName.Location = new System.Drawing.Point(279, 19);
+            this.textBoxScenarioName.Name = "textBoxScenarioName";
+            this.textBoxScenarioName.Size = new System.Drawing.Size(481, 20);
+            this.textBoxScenarioName.TabIndex = 6;
+            this.textBoxScenarioName.Text = "default.scenario";
+            this.textBoxScenarioName.TextChanged += new System.EventHandler(this.textBoxScenarioName_TextChanged);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(278, 5);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(116, 13);
+            this.label4.TabIndex = 7;
+            this.label4.Text = "Файл со сценариями";
+            // 
+            // buttonSelectScenario
+            // 
+            this.buttonSelectScenario.Location = new System.Drawing.Point(765, 16);
+            this.buttonSelectScenario.Name = "buttonSelectScenario";
+            this.buttonSelectScenario.Size = new System.Drawing.Size(30, 23);
+            this.buttonSelectScenario.TabIndex = 8;
+            this.buttonSelectScenario.Text = "...";
+            this.buttonSelectScenario.UseVisualStyleBackColor = true;
+            this.buttonSelectScenario.Click += new System.EventHandler(this.buttonSelectScenario_Click);
+            // 
+            // openFileDialogScenario
+            // 
+            this.openFileDialogScenario.CheckFileExists = false;
+            this.openFileDialogScenario.FileName = "*.*";
+            this.openFileDialogScenario.Title = "Файл с описанием сценариев";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -416,7 +521,6 @@
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             this.ResumeLayout(false);
-
         }
 
         #endregion
@@ -451,6 +555,15 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
         private System.Windows.Forms.NotifyIcon notifyIcon;
+        private System.Windows.Forms.Timer timerHide;
+        private System.Windows.Forms.Timer timerShedule;
+        private System.Windows.Forms.Label labelLastTime;
+        private System.Windows.Forms.Label labelState;
+        private System.Windows.Forms.CheckBox checkBoxSQLite;
+        private System.Windows.Forms.TextBox textBoxScenarioName;
+        private System.Windows.Forms.Button buttonSelectScenario;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.OpenFileDialog openFileDialogScenario;
     }
 }
 

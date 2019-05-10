@@ -33,6 +33,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.SuspendLayout();
             // 
             // textBox1
@@ -76,6 +77,12 @@
             this.folderBrowserDialog.RootFolder = System.Environment.SpecialFolder.MyComputer;
             this.folderBrowserDialog.ShowNewFolderButton = false;
             // 
+            // openFileDialog
+            // 
+            this.openFileDialog.CheckFileExists = false;
+            this.openFileDialog.FileName = "*.zip";
+            this.openFileDialog.Title = "Имя архива для сохранения";
+            // 
             // FormSelectDestination
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -88,9 +95,9 @@
             this.Name = "FormSelectDestination";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Выбрать место хранения копии";
+            this.Load += new System.EventHandler(this.FormSelectDestination_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
@@ -100,5 +107,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
     }
 }

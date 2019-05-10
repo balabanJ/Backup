@@ -252,10 +252,10 @@
             this.Load += new System.EventHandler(this.FormShedule_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
 
         #endregion
+
         private System.Windows.Forms.Button buttonRemove;
         private System.Windows.Forms.Button buttonReplace;
         private System.Windows.Forms.ComboBox comboBoxPeriod;

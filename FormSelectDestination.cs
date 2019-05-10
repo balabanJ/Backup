@@ -11,6 +11,8 @@ namespace Backup
 {
     public partial class FormSelectDestination : Form
     {
+        public Scenario scenario;
+
         public FormSelectDestination()
         {
             InitializeComponent();
@@ -18,8 +20,21 @@ namespace Backup
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (folderBrowserDialog.ShowDialog() != DialogResult.OK) return;
-            textBox1.Text = folderBrowserDialog.SelectedPath;
+            if (scenario.Zip && scenario.scenarioType == ScenarioType.зеркальный)
+            {
+                if (openFileDialog.ShowDialog() != DialogResult.OK) return;
+                textBox1.Text = openFileDialog.FileName;
+            }
+            else
+            {
+                if (folderBrowserDialog.ShowDialog() != DialogResult.OK) return;
+                textBox1.Text = folderBrowserDialog.SelectedPath;
+            }
+        }
+
+        private void FormSelectDestination_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
