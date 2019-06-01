@@ -18,8 +18,7 @@ namespace Backup
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        // Указывает, что потоковая модель COM для приложения является однопотоковым подразделением (STA)
-        [STAThread]
+        [STAThread] // Указывает, что потоковая модель COM для приложения является однопотоковым подразделением (STA)
         static void Main()
         {
             // Включает визуальные стили для приложения

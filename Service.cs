@@ -1,6 +1,14 @@
-﻿using System;
-using System.IO;
+﻿/*
+ * Пространство имен System.Windows.Forms содержит классы для создания приложений Windows, которые позволяют 
+ * наиболее эффективно использовать расширенные возможности пользовательского интерфейса, 
+ * доступные в операционной системе Microsoft Windows.
+ */
 using System.Windows.Forms;
+/*
+ * Пространство имен System.IO содержит типы, позволяющие осуществлять чтение и запись в файлы и потоки данных, 
+ * а также типы для базовой поддержки файлов и папок.
+ */
+using System.IO;
 /* 
  * Пространство имен System.Data обеспечивает доступ к классам, представляющим архитектуру ADO.NET. 
  * ADO.NET позволяет создавать компоненты, эффективно управляющие данными из нескольких источников данных.
@@ -16,12 +24,14 @@ using Microsoft.Win32;
 // Сервисные функции
 
 namespace Backup
-{   
+{
     // Класс "Сервис"
     class Service
-    {
+    {   
+        // Название приложения
         const string ApplicationName = "Backup";
 
+        // Запуск приложения вместе с Windows
         static public bool SetAutorunValue(bool autorun)
         {
             string ExePath = Application.ExecutablePath;
@@ -49,18 +59,18 @@ namespace Backup
         // Инструкция SQL для выполнения в БД SQLite
         static SQLiteCommand m_sqlCmd;
 
-        // Перед завершением сохранить сценарии в файл на диске
+        // Сохранить сценарии в файл на диске
         static public void SaveListToText(ScenarioList list)
         {
             list.Save(CurrentFileName);
         }
 
+        // Сохранить сценарии в SQLite
         static public void SaveListToSQLite(ScenarioList list)
         {
             string[] temp = new string[0];
             list.Save(ref temp);
 
-            // Сохранить массив из строк в SQLite
             // Если база не существует - создать базу
             if (!File.Exists(CurrentFileName))
             {
@@ -73,7 +83,15 @@ namespace Backup
 
                 m_sqlCmd = new SQLiteCommand(m_dbConn);
                 m_sqlCmd.Connection = m_dbConn;
-                m_sqlCmd.CommandText = "CREATE TABLE IF NOT EXISTS Scenario (id INTEGER PRIMARY KEY AUTOINCREMENT, Title TEXT)";
+
+                //m_sqlCmd.CommandText = "CREATE TABLE IF NOT EXISTS Scenario (id INTEGER PRIMARY KEY AUTOINCREMENT, Title TEXT)";
+                m_sqlCmd.CommandText = "CREATE TABLE IF NOT EXISTS Scenario (id INTEGER PRIMARY KEY AUTOINCREMENT, Title TEXT," +
+                    "ScenarioName TEXT," +
+                    "ScenarioType TEXT," +
+                    "ScenarioPack TEXT," +
+                    "ScenarioDestination TEXT" +
+                    ")";
+
                 m_sqlCmd.ExecuteNonQuery();
                 m_dbConn.Close();
             }
@@ -88,9 +106,24 @@ namespace Backup
             m_sqlCmd.ExecuteNonQuery();
 
             // Сохранить все temp
+            int index = 0;
             foreach (string s in temp)
             {
-                m_sqlCmd.CommandText = "INSERT INTO Scenario (Title) VALUES ('" + s + "')";
+                //m_sqlCmd.CommandText = "INSERT INTO Scenario (Title) VALUES ('" + s + "')";
+                m_sqlCmd.CommandText = "INSERT INTO Scenario " +
+                    "(" +
+                    "Title," +
+                    "ScenarioName," +
+                    "ScenarioType," +
+                    "ScenarioPack," +
+                    "ScenarioDestination" +
+                    ") values (" +
+                    "'" + s + "'," +
+                    "'" + list.list[index].Title + "'," +
+                    "'" + list.list[index].scenarioType.ToString() + "'," +
+                    "'" + list.list[index].Zip.ToString() + "'," +
+                    "'" + list.list[index].Destination + "'" +
+                    ")";
                 m_sqlCmd.ExecuteNonQuery();
             }
             m_dbConn.Close();
@@ -104,26 +137,28 @@ namespace Backup
                 SaveListToSQLite(list);
         }
 
+        // Загрузить сценарии из файла на диске
         static public void LoadListFromText(ScenarioList list)
         {
-            // Загрузить сценарии из файла на диске
             if (File.Exists(CurrentFileName))
                 list.Load(CurrentFileName);
         }
 
+        // Занрузить сценарии из SQLite
         static public void LoadListFromSQLite(ScenarioList list)
         {
             list.list.Clear();
+
             // Прочитать таблицу
             m_dbConn = new SQLiteConnection("Data Source = " + CurrentFileName + "; Version = 3;");
             m_dbConn.Open();
-            // Читать
             m_sqlCmd = new SQLiteCommand(m_dbConn);
             m_sqlCmd.Connection = m_dbConn;
             string sqlQuery = "SELECT Title FROM Scenario";
             SQLiteDataAdapter adapter = new SQLiteDataAdapter(sqlQuery, m_dbConn);
             DataTable dTable = new DataTable();
-            // Получили данные
+
+            // Получить данные
             adapter.Fill(dTable);
             string[] temp = new string[dTable.Rows.Count];
 

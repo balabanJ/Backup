@@ -34,9 +34,6 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>envelope_B_back.ico</ApplicationIcon>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -61,12 +58,6 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormMaster.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FormMaster.Designer.cs">
-      <DependentUpon>FormMaster.cs</DependentUpon>
-    </Compile>
     <Compile Include="FormSelectDestination.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -79,22 +70,30 @@
     <Compile Include="FormShedule.Designer.cs">
       <DependentUpon>FormShedule.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormVersion.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormVersion.Designer.cs">
+      <DependentUpon>FormVersion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Mailer.cs" />
     <Compile Include="MakeCopy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scenario.cs" />
     <Compile Include="Service.cs" />
+    <Compile Include="SHA512X.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FormMaster.resx">
-      <DependentUpon>FormMaster.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormSelectDestination.resx">
       <DependentUpon>FormSelectDestination.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormShedule.resx">
       <DependentUpon>FormShedule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormVersion.resx">
+      <DependentUpon>FormVersion.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -116,9 +115,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="envelope_B_back.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

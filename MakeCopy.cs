@@ -1,16 +1,38 @@
-﻿using System;
+﻿/*
+ * Пространство имен System содержит фундаментальные и базовые классы, 
+ * определяющие часто используемые типы значений и ссылочных данных, события и обработчики событий, 
+ * интерфейсы, атрибуты и исключения обработки.
+ */
+using System;
+/*
+ * Пространство имен System.Collections.Generic содержит интерфейсы и классы, определяющие универсальные коллекции, 
+ * которые позволяют пользователям создавать строго типизированные коллекции, обеспечивающие повышенную 
+ * производительность и безопасность типов по сравнению с неуниверсальными строго типизированными коллекциями.
+ */
 using System.Collections.Generic;
+/*
+ * Пространство имен System.Linq содержит классы и интерфейсы, которые поддерживают LINQ.
+ */
 using System.Linq;
-using System.Windows.Forms;
+/*
+ * Пространство имен System.IO содержит типы, позволяющие осуществлять чтение и запись в файлы и потоки данных, 
+ * а также типы для базовой поддержки файлов и папок.
+ */
 using System.IO;
+/*
+ * Пространство имен System.Windows.Forms содержит классы для создания приложений Windows, которые позволяют 
+ * наиболее эффективно использовать расширенные возможности пользовательского интерфейса, 
+ * доступные в операционной системе Microsoft Windows.
+ */
+using System.Windows.Forms;
 /* 
  * Пространство имен System.IO.Compression содержит классы, предоставляющие основные службы сжатия и распаковки для потоков.
  */
 using System.IO.Compression;
-//using System.Data.SQLite;
 
 namespace Backup
 {
+    // Класс "Создание копии"
     class MakeCopy
     {
         static bool ZipSource = false;
@@ -36,7 +58,50 @@ namespace Backup
             return result;
         }
 
-        // Оба файла не являются частью архива
+        static public List<string> Log = new List<string>();
+
+        // Сравнить два потока
+        static bool DifferentStreams(Stream srcs, Stream dsts, string srcname, string dstname)
+        {
+            bool result = false;
+            // Если TRUE, они различаются, значит различия запротоколировать в MakeCopyLog
+            try
+            {
+                if (srcs.Length != dsts.Length)
+                { 
+                    Log.Add("Длина " + srcname + " не равна длине " + dstname);
+                    return true;
+                }
+            }
+            catch
+            {
+                return true;
+            }
+
+            // Проверить на побайтовое совпадение
+            try
+            { 
+                while (srcs.Position != srcs.Length)
+                    if (srcs.ReadByte() != dsts.ReadByte())
+                    {
+                        result = true;
+                        break;
+                    }
+                if (result)
+                    Log.Add("Содержимое " + srcname + " не совпадает с " + dstname);
+
+                // Не испортить позицию в потоке
+                srcs.Position = 0;
+                dsts.Position = 0;
+            }
+            catch
+            {
+                return true;
+            }
+            return result;
+        }
+
+        // Скопировать файл
         static bool CopyFile(string src, string dst)
         {
             Stream srcs;
@@ -49,11 +114,35 @@ namespace Backup
                 srcs = new FileStream(src, FileMode.Open);
 
             if (ZipTarget)
+            {
+                // Проверить на совпадение
+                try
+                {
+                    ZipArchiveEntry zae = zip.GetEntry(ToZIPpath(dst));
+                    dsts = zae.Open();
+                    DifferentStreams(srcs, dsts, src, ToZIPpath(dst));
+                    dsts.Dispose();    
+                }
+                catch 
+                {
+                    Log.Add("Файл " + dst + " создан");
+                }
+                // Создать файл
                 dsts = zip.CreateEntry(ToZIPpath(dst)).Open();
+            }
             else
             {
                 if (!Directory.Exists(Path.GetDirectoryName(dst)))
                     Directory.CreateDirectory(Path.GetDirectoryName(dst));
+
+                if (!File.Exists(dst))
+                    Log.Add("Файл " + dst + " создан");
+                else
+                {
+                    dsts = new FileStream(dst, FileMode.Open);
+                    DifferentStreams(srcs, dsts, src, dst);
+                    dsts.Dispose();
+                }
                 dsts = new FileStream(dst, FileMode.Create);
             }
 
@@ -67,7 +156,7 @@ namespace Backup
                     {
                         MessageBox.Show(dst, "CopyFile: не могу создать каталог назначения");
                         return false;
-                    };
+                    }; 
 
             try
             {
@@ -83,20 +172,21 @@ namespace Backup
             }
         }
 
-        // Копирование каталога с подкаталогами
-        static bool CopyDir(string src, string dst)
+        // Скопировать каталог
+        static bool CopyDir(string src, string dst, bool CreateSHA, bool CheckSHA)
         { 
             if (ZipSource)
             {
                 // Получить список всех файлов из ZIP, которые находятся "внутри" src
                 // (в зависимости от их сорта CopyDir или CopyFile)
                 src = ToZIPpath(src) + "/";
+
                 foreach (var z in zip.Entries)
                 {
                     if (z.ToString().IndexOf(src) >=0)
                     {
                         string filename = dst + @"\";
-                        filename = filename + z.ToString().Substring(src.Length);
+                        filename = filename + z.Name; //z.ToString().Substring(src.Length);
                         if (File.Exists(filename)) File.Delete(filename);
                         z.ExtractToFile(filename);
                     }
@@ -108,36 +198,51 @@ namespace Backup
             bool result = true;
             DirectoryInfo dir = new DirectoryInfo(src);
 
-            //Скопировать файлы
             try
             {
-                foreach (var file in dir.GetFiles())
+                // Скопировать файлы
+                var dirGetFiles = dir.GetFiles();
+                foreach (var file in dirGetFiles)
                 {
+                    if (Path.GetExtension(file.Name) == ".sha512")
+                        continue; // Не копировать контрольные суммы
                     string newdst = dst + "\\" + file.FullName.Substring(src.Length);
                     newdst = newdst.Replace(@"\\", @"\");
+
+                    if (CheckSHA)
+                        if (!ZipSource || SHA512X.CheckSHA512(file.FullName))
+                        {
+                            result &= CopyFile(file.FullName, newdst); // Все файлы
+                            continue;
+                        }
                     result &= CopyFile(file.FullName, newdst); // Все файлы
+                    if (CreateSHA && !ZipTarget)
+                        SHA512X.CreateSHA512(newdst);
                 }
+
                 // Скопировать подкаталоги
                 foreach (var d in dir.GetDirectories())
                 {
                     string newdst = dst + "\\" + d.FullName.Substring(src.Length);
                     newdst = newdst.Replace(@"\\", @"\");
-                    result &= CopyDir(d.FullName, newdst); //Все каталоги
+                    result &= CopyDir(d.FullName, newdst, CreateSHA, CheckSHA); // Все каталоги
                 }
             }
-            catch (Exception ex)
+            catch (Exception ee)
             {
-                MessageBox.Show(src + " -> " + dst, "CopyDir: Не могу скопировать");
-                MessageBox.Show(ex.Message);
+                MessageBox.Show(src + " -> " + dst, "CopyDir: не могу скопировать");
+                MessageBox.Show(ee.Message);
             }
             return result;
         }
 
+        // "Заплатка"
         struct Patch
         {
             public long Offset; // Смещение в файле
             public byte[] Data; // Данные
             public bool Override; // Сигнал о необходимости полной замены файла
+
             public void Save(BinaryWriter b)
             {
                 b.Write(Override);
@@ -160,10 +265,11 @@ namespace Backup
         {
             // Предполагается, что файлы одинаковой длины
             patches = new List<Patch>();
+
             byte[] F1 = File.ReadAllBytes(f1);
             byte[] F2 = File.ReadAllBytes(f2);
 
-            if (F1.Length != F2.Length) // Тогда - полная перезапись
+            if (F1.Length != F2.Length) // Если TRUE - полная перезапись
             {
                 Patch p = new Patch();
                 p.Override = true;
@@ -173,8 +279,9 @@ namespace Backup
                 return false;
             }
 
-            // Для каждого байта
-            int index = 0;
+            int index= 0;
+
+            //Для каждого байта
             while (index < F1.Length)
             {
                 // Если байты совпадают - просто продолжить
@@ -183,10 +290,9 @@ namespace Backup
                     index++;
                     continue;
                 }
-
                 // Если не совпадают - найти место, где снова совпали
                 int len = 0;
-                while (len + index < F1.Length && F1[len  +index] != F2[len + index])
+                while (len + index < F1.Length && F1[len+index] != F2[len+index])
                     len++;
                 // И выделить очередную заплатку
                 Patch p = new Patch();
@@ -206,8 +312,9 @@ namespace Backup
         {
             if (!File.Exists(patchname))
                 return false;
+
             List<Patch> patches = new List<Patch>();
-            FileStream r = new FileStream(patchname,FileMode.Open);
+            FileStream r = new FileStream(patchname, FileMode.Open);
             BinaryReader b = new BinaryReader(r);
 
             while (r.Position < r.Length)
@@ -223,13 +330,11 @@ namespace Backup
 
             foreach (Patch p in patches)
             {
-                // Тяжелый случай
                 if (p.Override)
                 {
                     F2 = p.Data.ToArray();
                     continue;
                 }
-                // Нормальная заплатка
                 for (int k = 0; k < p.Data.Length; k++)
                     F2[p.Offset + k] = p.Data[k];
             }
@@ -239,14 +344,16 @@ namespace Backup
 
         static List<Patch> lastPatch;
 
-        // Простая проверка на изменения
+        // Простая проверка на изменения в файле
         static bool IsIdenticalFile(string f1, string f2, bool deep=false)
         {
             f1 = f1.Replace("*", "").Replace(@"\\", @"\");
             f2 = f2.Replace("*", "").Replace(@"\\", @"\");
 
-            if (!File.Exists(f1)) return false;
-            if (!File.Exists(f2)) return false;
+            if (!File.Exists(f1))
+                return false;
+            if (!File.Exists(f2))
+                return false;
 
             FileInfo fi1, fi2;
 
@@ -272,14 +379,17 @@ namespace Backup
 
             // Если нет требования на "глубокое сканирование"
             bool result = (fi1.LastWriteTime == fi2.LastWriteTime) && (fi1.Length == fi2.Length);
+
             if (!deep || !result)
                 return result;
+
             // Если требуется сравнение по содержимому
             CreateBinaryPatch(f1, f2, out lastPatch);
+
             return lastPatch.Count > 0;
-            //Побочный эффект - создание набора заплаток
         }
 
+        // Простая проверка на изменения в каталоге
         static bool IsIdenticalDir(string d1, string d2, bool deep = false)
         {
             DirectoryInfo dir1, dir2;
@@ -299,22 +409,22 @@ namespace Backup
 
             try
             { 
-                dir2 = new DirectoryInfo(d2);
+            dir2 = new DirectoryInfo(d2);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, d2);
                 return false;
             }
-
             bool result = true;
+
             try
             { 
                FileInfo[] test = dir1.GetFiles();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, d1+" GetFiles");
+                MessageBox.Show(ex.Message, d1 + " Get files");
                 return false;
             }
 
@@ -322,20 +432,20 @@ namespace Backup
             {
                 string newdst = d2 + "\\" + file.FullName.Substring(d1.Length);
                 newdst = newdst.Replace(@"\\", @"\");
+
                 result &= IsIdenticalFile(file.FullName, newdst, deep); // Все файлы
+
                 if (!result)
                     return false;
             }
 
-            // Скопировать подкаталоги
             try
             {
                 DirectoryInfo[] test = dir1.GetDirectories();
-
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, d1 + " get directories");
+                MessageBox.Show(ex.Message, d1 + " Get directories");
                 return false;
             }
 
@@ -343,58 +453,110 @@ namespace Backup
             {
                 string newdst = d2 + "\\" + d.FullName.Substring(d1.Length);
                 newdst = newdst.Replace(@"\\", @"\");
-                result &= IsIdenticalDir(d.FullName, newdst, deep); //Все каталоги
+
+                result &= IsIdenticalDir(d.FullName, newdst, deep); // Все каталоги
+
                 if (!result)
                     return false;
             }
             return true;
         }
 
-
-        private static bool CopyFile(string sourcefilename, string root, string version)
+        // Скопировать файл
+        private static bool CopyFile(string sourcefilename, string root, string version, bool CreateCheckSum)
         {
             string destinationfilename = root + "\\" + version + "\\" + sourcefilename.Replace(@":\", @"\");
             destinationfilename = destinationfilename.Replace(@"\\", "\\");
-            return CopyFile(sourcefilename, destinationfilename);
+
+            bool result = CopyFile(sourcefilename, destinationfilename);
+
+            if (!ZipTarget)
+                SHA512X.CreateSHA512(destinationfilename);
+
+            return result;
         }
 
-        static bool RestoreFile(string sourcefilename, string root, string version)
-        //filename - имя восстанавливаемого файла
+        // Восстановить файл
+        static bool RestoreFile(string sourcefilename, string root, string version, bool AlarmCheckSum)
+        // filename - имя восстанавливаемого файла
         {
             string destinationfilename = root + "\\" + version + "\\" + sourcefilename.Replace(@":\", @"\");
             destinationfilename = destinationfilename.Replace(@"\\", "\\");
-            return CopyFile(destinationfilename, sourcefilename);
+
+            bool OK = !AlarmCheckSum; // Не проверять контрольную сумму
+            OK |= ZipSource; // Архив это
+            if (!OK)
+                OK = SHA512X.CheckSHA512(destinationfilename); // Проверить контрольную сумму
+            if (!OK)
+                OK = MessageBox.Show("Выполнять восстановление?", "Не совпадает или отсутствует контрольная сумма", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                == DialogResult.Yes;
+            if (OK)
+                return CopyFile(destinationfilename, sourcefilename);
+
+            return false;            
         }
 
-
-        private static bool CopyDir(string  sourcepath, string root, string version)
+        // Копировать каталог
+        private static bool CopyDir(string  sourcepath, string root, string version, bool CreateCheckSum)
         {
             string destinationpath = root + "\\" + version + "\\" + sourcepath.Replace(@":\", @"\");
             destinationpath = destinationpath.Replace(@"\\", "\\");
-            return CopyDir(sourcepath, destinationpath);
+
+            return CopyDir(sourcepath, destinationpath, true, false);
         }
 
+        // Восстановить каталог
         static bool RestoreDir(string sourcepath, string root, string version)
         {
             string destinationpath = root + "\\" + version + "\\" + sourcepath.Replace(@":\", @"\");
             destinationpath = destinationpath.Replace(@"\\", "\\");
-            return CopyDir(destinationpath, sourcepath);
+
+            return CopyDir(destinationpath, sourcepath, false, true);
         }
 
-        //*************************************************************************************//
+        // Исключить недопустимые для файловой системы символы
+        public static string exclude(string s)
+        {
+            s = s.Replace("*", "");
+            s = s.Replace("?", "");
+            s = s.Replace(":", "");
+            s = s.Replace("/", "");
+            s = s.Replace(@"\", "");
+            s = s.Replace("«", "");
+            s = s.Replace("<", "");
+            s = s.Replace(">", "");
+            s = s.Replace("|", "");
+            if (s[s.Length-1]!='\\')
+                s += @"\";
+            return s;
+        }
 
+        //-----------------------------------------------------------------------------------------//
+
+        // Копировать файлы/каталоги с помощью зеркального типа резервирования
         public static bool CopyMirror(ref Scenario scenario, string version="")
         {
-            // Зеркальное копирование. Резервная копия заменяет прошлую
-            // Настроить доступ к архиву, если это необходимо
-            string Destination = scenario.Destination;
+            string Destination = scenario.Destination + exclude(scenario.Title);
+
+            if (scenario.Zip)
+                Destination = Path.GetDirectoryName(scenario.Destination) + "\\" + MakeCopy.exclude(scenario.Title) + version + "\\" + Path.GetFileName(scenario.Destination);
+
             ZipSource = false;
             zip = null;
             if (scenario.Zip)
             {
                 ZipTarget = true;
-                if (File.Exists(scenario.Destination)) File.Delete(scenario.Destination);
-                zip = ZipFile.Open(scenario.Destination, ZipArchiveMode.Create);
+                if (File.Exists(scenario.Destination))
+                    File.Delete(scenario.Destination);
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(Destination));
+                    zip = ZipFile.Open(Destination, ZipArchiveMode.Create);
+                }
+                catch
+                {
+                    return false;
+                }
                 Destination = "";
             }
             else
@@ -404,26 +566,55 @@ namespace Backup
 
             // Для всех файлов и каталогов из списка сделать точную копию (с созданием соответствующего подкаталога)
             bool result = true;
+
             foreach (var filename in scenario.Source)
             {
                 if (filename[0] == '*')
-                    result &= CopyDir(filename.Substring(1), Destination, version);
+                    result &= CopyDir(filename.Substring(1), Destination, version, true);
                 else
-                    result &= CopyFile(filename, Destination, version);
+                    result &= CopyFile(filename, Destination, version, true);
             }
             if (zip!=null)
                 zip.Dispose();
+            try
+            {
+                if (scenario.Zip) // Создать контрольную сумму для всего архива
+                                SHA512X.CreateSHA512(scenario.Destination);
+            }
+            catch
+            {
+                return false;
+            }
+            
             return result;
         }
 
+        // Восстановить файлы/каталоги с помощью зеркального типа резервирования
         public static bool RestoreMirror(ref Scenario scenario, string version = "")
         {
-            string Destination = scenario.Destination;
+            string Destination = scenario.Destination + exclude(scenario.Title);
+
+            if (scenario.Zip)
+                Destination = Path.GetDirectoryName(scenario.Destination) + "\\" + MakeCopy.exclude(scenario.Title) + version + "\\" + Path.GetFileName(scenario.Destination);
+
             ZipTarget = false;
             if (scenario.Zip)
             {
                 ZipSource = true;
-                zip = ZipFile.Open(scenario.Destination, ZipArchiveMode.Read);
+
+                // Проверить контрольную сумму
+                if (!SHA512X.CheckSHA512(scenario.Destination))
+                    if (MessageBox.Show("Продолжить?", "Контрольная сумма архива повреждена или отсутствует", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                        return false;
+                try
+                {
+                    zip = ZipFile.Open(scenario.Destination, ZipArchiveMode.Read);
+                }
+                catch
+                {
+                    MessageBox.Show("Файл копии не найден", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
                 Destination = "";
             }
             else
@@ -433,12 +624,13 @@ namespace Backup
 
             // Для всех файлов и каталогов из списка сделать точную копию (с созданием соответствующего подкаталога)
             bool result = true;
+
             foreach (var filename in scenario.Source)
             {
                 if (filename[0] == '*')
                     result &= RestoreDir(filename.Substring(1), Destination,  version);
                 else
-                    result &= RestoreFile(filename, Destination, version);
+                    result &= RestoreFile(filename, Destination, version, true);
             }
 
             if (zip != null)
@@ -447,13 +639,13 @@ namespace Backup
             return result;
         }
 
-        //*************************************************************************************//
+        //-----------------------------------------------------------------------------------------//
 
+        // Получить номер самой что ни на есть последней версии.
+        // Внутри path создаются подкаталоги с именами 0,1,2 и т.д.
+        // (собственно, это значение и есть номер сохраненной версии)
         static int GetLastVersion(string path)
         {
-            // Получить номер самой что ни на есть последней версии.
-            // Внутри path создаются подкаталоги с именами 0,1,2 и т.д.
-            // (собственно, это значение и есть номер сохраненной версии)
             int last = 0;
             DirectoryInfo dir;
 
@@ -463,19 +655,32 @@ namespace Backup
             }
             catch
             {
-                MessageBox.Show(path, "GetLastVersion: нет доступа к каталогу");
+                try
+                {
+                    Directory.CreateDirectory(path);
+                }
+                catch
+                {
+                    MessageBox.Show(path, "GetLastVersion: нет доступа к каталогу");
+                }
                 return 0;
             }
 
             DirectoryInfo[] dirDirectories;
 
-            try
-            { 
+            try { 
                dirDirectories = dir.GetDirectories();
             }
             catch
             {
-                MessageBox.Show(path, "GetLastVersion: нет доступа к каталогу");
+                try
+                {
+                    Directory.CreateDirectory(path);
+                }
+                catch
+                {
+                    MessageBox.Show(path, "GetLastVersion: нет доступа к каталогу");
+                }
                 return 0;
             }
 
@@ -483,8 +688,11 @@ namespace Backup
             {
                 string x = Path.GetFileName(d.FullName);
                 int vindex = 0;
-                if (!int.TryParse(x, out vindex)) continue; // Это что-то другое, а не версия
-                if (vindex > last) last = vindex;
+
+                if (!int.TryParse(x, out vindex))
+                    continue;
+                if (vindex > last)
+                    last = vindex;
             }
             return last;
         }
@@ -495,6 +703,7 @@ namespace Backup
             // Для всех файлов и каталогов из списка 
             bool result = true;
             string root = scenario.Destination;
+
             foreach (var sourcefilename in scenario.Source)
             {
                 if (sourcefilename[0] == '*')
@@ -515,81 +724,127 @@ namespace Backup
             return true;
         }
 
-        //*************************************************************************************//
+        //-----------------------------------------------------------------------------------------//
 
+        // Копировать файлы/каталоги с помощью полного типа резервирования
         public static bool CopyFull(ref Scenario scenario)
         {
-            // Создает отдельную копию 
+            string Destination;
+            int version;
+
+            if (scenario.Zip)
+            {
+                Destination = Path.GetDirectoryName(scenario.Destination) + "\\" + MakeCopy.exclude(scenario.Title);
+            }
+            else
+            {
+                Destination = scenario.Destination + exclude(scenario.Title);
+            }
             // Определить последнюю версию
-            int version = GetLastVersion(scenario.Destination);
-            // Сделать зеркальную копию в новое место
+            version = GetLastVersion(Destination);
 
             if (IsIdentical(ref scenario, (version).ToString(), false))
             {
                 return false;
             }
 
+            // Сделать зеркальную копию в новое место
             return CopyMirror(ref scenario, (version + 1).ToString());
         }
 
+        // Восстановить файлы/каталоги с помощью полного типа резервирования
         public static bool RestoreFull(ref Scenario scenario)
         {
+            string Destination;
+            int version;
+
+            if (scenario.Zip)
+            { 
+                Destination = Path.GetDirectoryName(scenario.Destination) + "\\" + MakeCopy.exclude(scenario.Title);
+            }
+            else
+            { 
+                Destination = scenario.Destination + exclude(scenario.Title);
+            }
             // Определить самую последнюю копию
-            int version = GetLastVersion(scenario.Destination);
+            version = GetLastVersion(Destination);
+
+            // При необходимости переспросить у пользователя, какую версию использовать
+            if (version > 1)
+            {
+                FormVersion FV = new FormVersion();
+                for (int i = 0; i < version; i++)
+                    FV.comboBox.Items.Add(i + 1);
+                FV.comboBox.SelectedIndex = version - 1;
+                FV.ShowDialog();
+                version = FV.comboBox.SelectedIndex + 1;
+            }
+
             // Сделать зеркальное восстановление
-            RestoreMirror(ref scenario, version.ToString());
-            return false;
+            return RestoreMirror(ref scenario, version.ToString());
         }
 
-        //*************************************************************************************//
+        //-----------------------------------------------------------------------------------------//
 
-        static bool IncrementalFile(string f1, string f2, bool deep = true)
+        static bool PatchFile(string f1, string f2, string basefilename, bool deep = true)
+        {
+            if (!File.Exists(f1))
+                return false;
+            if (!File.Exists(basefilename))
+                return false;
+
+            // Требуется сравнение по содержимому
+            CreateBinaryPatch(f1, basefilename, out lastPatch);
+            if (lastPatch.Count == 0)
+                return true;
+
+            //Сохранить его под именем f2:patch
+            //Удалить, если он уже есть
+            Log.Add(lastPatch.Count.ToString() + " изменений в " + f1);
+
+            if (File.Exists(f2 + ";patch"))
+                File.Delete(f2 + ";patch");
+
+            //Убедиться в существовании подкаталога
+            Directory.CreateDirectory(Path.GetDirectoryName(f2)); 
+
+            FileStream w = new FileStream(f2 + ";patch", FileMode.CreateNew);
+            BinaryWriter b = new BinaryWriter(w);
+
+            foreach (Patch p in lastPatch)
+                p.Save(b);
+            w.Close();
+
+            return true;
+        }
+
+        static bool PatchFileRestore(string f1, string f2)
         {
             if (!File.Exists(f1))
                 return false;
             if (!File.Exists(f2))
                 return false;
-            // Требуется сравнение по содержимому
-            CreateBinaryPatch(f1, f2, out lastPatch);
-            if (lastPatch.Count == 0)
-                return true;
-            // Побочный эффект - создание набора заплаток
-            // Сохранить его под именем f2:patch
-            // Удалить, если он уже есть
-            if (File.Exists(f2 + ";patch"))
-                File.Delete(f2 + ";patch");
-
-            FileStream w = new FileStream(f2 + ";patch",FileMode.CreateNew);
-            BinaryWriter b = new BinaryWriter(w);
-            foreach (Patch p in lastPatch)
-                p.Save(b);
-            w.Close();
-            return true;
-        }
-
-        static bool IncrementalFileRestore(string f1, string f2)
-        {
-            if (!File.Exists(f1)) return false;
-            if (!File.Exists(f2)) return false;
-
-            // Требуется сравнение по содержимому
+            //Требуется сравнение по содержимому
             string patchname = f2 + ";patch";
             if (!File.Exists(patchname))
                 return true;
-            // Применить к файлу f2 patchname и сохранить в f1
+
+            //Применить к файлу f2 patchname и сохранить в f1
             ApplyBinaryPatch(f2, f1, patchname);
+
             return true;
         }
 
-        static bool IncrementalDir(string d1, string d2)
+        static bool PatchDirRestore(string d1, string d2)
         {
             DirectoryInfo dir1 = new DirectoryInfo(d1);
             DirectoryInfo dir2 = new DirectoryInfo(d2);
+
             foreach (var file in dir1.GetFiles())
             {
                 string newdst = d2 + "\\" + file.FullName.Substring(d1.Length);
                 newdst = newdst.Replace(@"\\", @"\");
-                IncrementalFile(file.FullName, newdst);
+                PatchFileRestore(file.FullName, newdst);
             }
 
             //Скопировать подкаталоги
@@ -597,12 +852,86 @@ namespace Backup
             {
                 string newdst = d2 + "\\" + d.FullName.Substring(d1.Length);
                 newdst = newdst.Replace(@"\\", @"\");
-                IncrementalDir(d.FullName, newdst); // Все каталоги
+                PatchDirRestore(d.FullName, newdst); //Все каталоги
             }
+
             return true;
         }
 
-        static bool IncrementalDirRestore(string d1, string d2)
+
+        static bool PatchDir(string d1, string d2, string basefilename)
+        {
+            DirectoryInfo dir1 = new DirectoryInfo(d1);
+            DirectoryInfo dir2 = new DirectoryInfo(d2);
+
+            foreach (var file in dir1.GetFiles())
+            {
+                string newdst = d2 + "\\" + file.FullName.Substring(d1.Length);
+                newdst = newdst.Replace(@"\\", @"\");
+                PatchFile(file.FullName, newdst, basefilename);
+            }
+
+            //Скопировать подкаталоги
+            foreach (var d in dir1.GetDirectories())
+            {
+                string newdst = d2 + "\\" + d.FullName.Substring(d1.Length);
+                newdst = newdst.Replace(@"\\", @"\");
+                PatchDir(d.FullName, newdst, basefilename); //Все каталоги
+            }
+
+            return true;
+        }
+
+        //-----------------------------------------------------------------------------------------//
+
+        // Копировать файлы с помощью инкрементального типа резервирования
+        /*static bool IncrementalFile(string f1, string f2,string basefilename, bool deep = true)
+        {
+            if (!File.Exists(f1))
+                return false;
+            if (!File.Exists(basefilename))
+                return false;
+
+            // Требуется сравнение по содержимому
+            CreateBinaryPatch(f1, basefilename, out lastPatch);
+            if (lastPatch.Count == 0)
+                return true;
+
+            // Сохранить его под именем "f2:patch"
+            // Удалить, если он уже есть
+            Log.Add(lastPatch.Count.ToString() + " изменений в " + f1);
+
+            if (File.Exists(f2 + ";patch"))
+                File.Delete(f2 + ";patch");
+
+            // Убедиться в существовании подкаталога
+            Directory.CreateDirectory(Path.GetDirectoryName(f2)); 
+
+            FileStream w = new FileStream(f2 + ";patch",FileMode.CreateNew);
+            BinaryWriter b = new BinaryWriter(w);
+
+            foreach (Patch p in lastPatch)
+                p.Save(b);
+            w.Close();
+
+            return true;
+        }*/
+
+        // Восстановить файлы с помощью инкрементального типа резервирования
+        /*static bool IncrementalFileRestore(string f1, string f2)
+        {
+            if (!File.Exists(f1)) return false;
+            if (!File.Exists(f2)) return false;
+            //Требуется сравнение по содержимому
+            string patchname = f2 + ";patch";
+            if (!File.Exists(patchname)) return true;
+            //Применить к файлу f2 patchname и сохранить в f1
+            ApplyBinaryPatch(f2, f1, patchname);
+            return true;
+        }*/
+
+        // Копировать каталоги с помощью инкрементального типа резервирования
+        /*static bool IncrementalDir(string d1, string d2, string basefilename)
         {
             DirectoryInfo dir1 = new DirectoryInfo(d1);
             DirectoryInfo dir2 = new DirectoryInfo(d2);
@@ -610,93 +939,150 @@ namespace Backup
             {
                 string newdst = d2 + "\\" + file.FullName.Substring(d1.Length);
                 newdst = newdst.Replace(@"\\", @"\");
-                IncrementalFileRestore(file.FullName, newdst);
+                IncrementalFile(file.FullName, newdst, basefilename);
             }
-            // Скопировать подкаталоги
+
             foreach (var d in dir1.GetDirectories())
             {
                 string newdst = d2 + "\\" + d.FullName.Substring(d1.Length);
                 newdst = newdst.Replace(@"\\", @"\");
-                IncrementalDirRestore(d.FullName, newdst); //Все каталоги
+                IncrementalDir(d.FullName, newdst, basefilename); // Все каталоги
             }
             return true;
-        }
+        }*/
 
+        // Восстановить каталоги с помощью инкрементального типа резервирования
+        /*static bool IncrementalDirRestore(string d1, string d2)
+        {
+            DirectoryInfo dir1 = new DirectoryInfo(d1);
+            DirectoryInfo dir2 = new DirectoryInfo(d2);
+
+            foreach (var file in dir1.GetFiles())
+            {
+                string newdst = d2 + "\\" + file.FullName.Substring(d1.Length);
+                newdst = newdst.Replace(@"\\", @"\");
+                IncrementalFileRestore(file.FullName, newdst);
+            }
+
+            foreach (var d in dir1.GetDirectories())
+            {
+                string newdst = d2 + "\\" + d.FullName.Substring(d1.Length);
+                newdst = newdst.Replace(@"\\", @"\");
+                IncrementalDirRestore(d.FullName, newdst); // Все каталоги
+            }
+            return true;
+        }*/
 
         public static bool CopyIncremental(ref Scenario scenario)
         {
             // Начальное состояние + изменения БЛОКОВ (отдельно по версиям)
             // Есть ли зеркальная копия?
-            if (0 == GetLastVersion(scenario.Destination))
+            int Version = GetLastVersion(scenario.Destination + exclude(scenario.Title));
+
+            if (0 == Version)
             {
-                // Если нет, то сделать ее
+                //Если нет, то сделать ее
                 CopyFull(ref scenario);
+
                 return true; // Собственно говоря, копия готова
             }
 
-            // Для всех файлов
+            // Для всех файлов:
             // Сделать сравнение и сохранить patch-и (под именем файла)
-            string root = scenario.Destination;
-            string version = "1";
+            string root = scenario.Destination + exclude(scenario.Title);
+            string version = (Version).ToString();
+
             foreach (var sourcefilename in scenario.Source)
             {
                 if (sourcefilename[0] == '*')
                 {
+                    string basefilename = root + "\\" + "1" + "\\" + sourcefilename.Substring(1).Replace(@":\", @"\");
                     string destinationfilename = root + "\\" + version + "\\" + sourcefilename.Substring(1).Replace(@":\", @"\");
                     destinationfilename = destinationfilename.Replace(@"\\", "\\");
-                    IncrementalDir(sourcefilename.Substring(1), destinationfilename);
+                    basefilename = basefilename.Replace(@"\\", "\\");
+                    PatchDir(sourcefilename.Substring(1), destinationfilename, basefilename);
                 }
                 else
                 {
                     string destinationfilename = root + "\\" + version + "\\" + sourcefilename.Replace(@":\", @"\");
                     destinationfilename = destinationfilename.Replace(@"\\", "\\");
-                    IncrementalFile(sourcefilename, destinationfilename);
+                    string basefilename = root + "\\" + "1" + "\\" + sourcefilename.Replace(@":\", @"\");
+                    basefilename = basefilename.Replace(@"\\", "\\");
+                    PatchFile(sourcefilename, destinationfilename, basefilename);
                 }
             }
             return true;
         }
 
-        public static bool RestoreIncremental(ref Scenario scenario)
+        public static bool RestoreIncremental(ref Scenario scenario, int  Version=-1)
         {
             // Есть ли зеркальная копия?
-            if (0 == GetLastVersion(scenario.Destination))
+            if (Version < 0)
+                Version = GetLastVersion(scenario.Destination + exclude(scenario.Title));
+
+            if (0 == Version)
             {
-                return false; // Собственно говоря, копии то и нет
+                MessageBox.Show("Нет ни одной сохраненной копии");
+                return false; //Собственно говоря, копии то и нет
             }
+
             // Начальное состояние + история изменений
             // Для всех файлов
             // Если есть patch - провести восстановление
-            string root = scenario.Destination;
-            string version = "1";
+            string root = scenario.Destination + exclude(scenario.Title);
+            string version = Version.ToString();
+
             foreach (var sourcefilename in scenario.Source)
             {
                 if (sourcefilename[0] == '*')
                 {
                     string destinationfilename = root + "\\" + version + "\\" + sourcefilename.Substring(1).Replace(@":\", @"\");
                     destinationfilename = destinationfilename.Replace(@"\\", "\\");
-                    IncrementalDirRestore(sourcefilename.Substring(1), destinationfilename);
+                    PatchDirRestore(sourcefilename.Substring(1), destinationfilename);
                 }
                 else
                 {
                     string destinationfilename = root + "\\" + version + "\\" + sourcefilename.Replace(@":\", @"\");
                     destinationfilename = destinationfilename.Replace(@"\\", "\\");
-                    IncrementalFileRestore(sourcefilename, destinationfilename);
+                    PatchFileRestore(sourcefilename, destinationfilename);
                 }
             }
             return true;
         }
 
-        //*************************************************************************************//
+        //-----------------------------------------------------------------------------------------//
 
+        // Копировать файлы/каталоги с помощью дифференциального типа резервирования
         public static bool CopyDifferential(ref Scenario scenario)
         {
-            //Начальное состояние + изменения относительно начального состояния
-            return CopyIncremental(ref scenario); /// Заглушка
+            int version = GetLastVersion(scenario.Destination + exclude(scenario.Title));
+            Directory.CreateDirectory(scenario.Destination + exclude(scenario.Title)+(version+1).ToString());
+
+            // Начальное состояние + изменения относительно начального состояния
+            return CopyIncremental(ref scenario);
         }
 
+        // Восстановить файлы/каталоги с помощью дифференциального типа резервирования
         public static bool RestoreDifferential(ref Scenario scenario)
         {
-            return RestoreIncremental(ref scenario); ///Заглушка
+            int version = GetLastVersion(scenario.Destination + exclude(scenario.Title));
+
+            // При необходимости переспросить у пользователя, какую версию использовать
+            if (version > 1)
+            {
+                FormVersion FV = new FormVersion();
+                for (int i = 0; i < version; i++)
+                    FV.comboBox.Items.Add(i + 1);
+                FV.comboBox.SelectedIndex = version - 1;
+                FV.ShowDialog();
+                version = FV.comboBox.SelectedIndex + 1;
+            }
+
+            //Восстановить ВСЕ версии, включая указанную
+            bool result = true;
+            for (int recover = 1; recover <= version; recover++)
+                result &= RestoreIncremental(ref scenario, recover);
+            return result;
         }
     }
 }
